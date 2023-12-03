@@ -1,6 +1,7 @@
 /** @format */
 
 const express = require('express');
+
 const { validateBody, authenticate } = require('../../middlewares');
 const { favoriteSchema } = require('../../models');
 const { changeSubscription } = require('../../controllers/users');

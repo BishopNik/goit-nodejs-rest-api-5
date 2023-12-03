@@ -1,6 +1,7 @@
 /** @format */
 
 const express = require('express');
+
 const { validateBody, isValidId, authenticate } = require('../../middlewares');
 const { contactAddSchema } = require('../../models');
 const {
