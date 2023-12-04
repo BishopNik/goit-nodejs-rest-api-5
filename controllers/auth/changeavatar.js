@@ -45,46 +45,44 @@ admin.initializeApp({
 const storage = admin.storage();
 const bucket = storage.bucket();
 
-const changeAvatar = async ({ user, file }, res) => {
+const changeAvatar = async ({ user, file }, res, next) => {
 	const { _id } = user;
+
+	if (!file) {
+		throw HttpError(406, 'Error loading avatar');
+	}
+
 	const { path: tempUpload, originalname } = file;
 	const filename = `${_id}_${originalname}`;
 
-	try {
-		// Делаю 250х250
-		const avatar = await Jimp.read(tempUpload);
-		await avatar.cover(250, 250).quality(60).writeAsync(tempUpload);
+	// Делаю 250х250
+	const avatar = await Jimp.read(tempUpload);
+	await avatar.cover(250, 250).quality(60).writeAsync(tempUpload);
 
-		// Грузим to Firebase Cloud Storage
-		const firebaseFile = bucket.file(filename);
-		const fileContent = await fs.readFile(tempUpload);
-		await firebaseFile.save(fileContent, {
-			metadata: {
-				contentType: 'image/jpeg',
-			},
-		});
+	// Грузим to Firebase Cloud Storage
+	const firebaseFile = bucket.file(filename);
+	const fileContent = await fs.readFile(tempUpload);
+	await firebaseFile.save(fileContent, {
+		metadata: {
+			contentType: 'image/jpeg',
+		},
+	});
 
-		// Получаю URL
-		const [url] = await firebaseFile.getSignedUrl({
-			action: 'read',
-			expires: '01-01-2035',
-		});
+	// Получаю URL
+	const [url] = await firebaseFile.getSignedUrl({
+		action: 'read',
+		expires: '01-01-2035',
+	});
 
-		const avatarURL = url.replace(
-			'https://storage.googleapis.com/node-hw4-edfa3.appspot.com/',
-			''
-		);
+	const avatarURL = url.replace('https://storage.googleapis.com/node-hw4-edfa3.appspot.com/', '');
 
-		// Обновляю user data in the database
-		await User.findByIdAndUpdate(_id, { avatarURL });
-		await fs.unlink(tempUpload);
+	// Обновляю user data in the database
+	await User.findByIdAndUpdate(_id, { avatarURL });
+	await fs.unlink(tempUpload);
 
-		res.json({
-			avatarURL,
-		});
-	} catch {
-		HttpError(500);
-	}
+	res.json({
+		avatarURL,
+	});
 };
 
 module.exports = changeAvatar;
