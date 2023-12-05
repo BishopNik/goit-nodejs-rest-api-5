@@ -129,3 +129,4 @@ dist
 #other
 config.js
 *.json
+.DS_Store
