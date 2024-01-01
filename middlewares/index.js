@@ -1,6 +1,6 @@
 /** @format */
 
-const validateBody = require('./validateBody.js');
+const validateBody = require('./validatebody.js');
 const isValidId = require('./isvalidid.js');
 const authenticate = require('./authenticate.js');
 const checkOwner = require('./checkowner.js');
